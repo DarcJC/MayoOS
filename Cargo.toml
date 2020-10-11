@@ -35,6 +35,7 @@ volatile = "0.2.3"
 spin = "0.4.9"
 x86_64 = "0.12.2"
 uart_16550 = "0.2.10"
+pic8259_simple = "0.2.0"
 
 [dependencies.lazy_static]
 version = "1.4.0"

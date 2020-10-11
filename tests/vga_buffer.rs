@@ -8,7 +8,7 @@
 use core::panic::PanicInfo;
 
 #[cfg(test)]
-use mayoos::{serial_println, serial_print, println};
+use mayoos::{serial_println, serial_print, println, vga_buffer};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -28,5 +28,26 @@ fn test_println() {
     for i in 0..200 {
         println!("Test test test {}", i);
     }
+    serial_println!("[ok]");
+}
+
+#[test_case]
+fn test_println_output() {
+    use core::fmt::Write;
+    use x86_64::instructions::interrupts;
+
+    serial_print!("Testing println outputs... ");
+
+    let s = "Some test string that fits on a single line";
+
+    let mut writer = vga_buffer::VGA_WRITER.lock();
+    interrupts::without_interrupts(|| {
+        writeln!(writer, "{}", s).unwrap();
+        for (i, c) in s.chars().enumerate() {
+            let screen_char = writer.buffer.chars[vga_buffer::BUFFER_HEIGHT - 2][i].read();
+            assert_eq!(char::from(screen_char.ascii_char), c);
+        }
+    });
+
     serial_println!("[ok]");
 }
