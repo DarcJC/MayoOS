@@ -26,6 +26,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 pub fn init() {
+    gdt::init();
     interrupts::init_idt();
 }
 
@@ -64,3 +65,4 @@ pub fn exit_qemu_by_port(exit_code: QemuExitCode) {
 pub mod vga_buffer;
 pub mod serial_port;
 pub mod interrupts;
+pub mod gdt;

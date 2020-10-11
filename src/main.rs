@@ -18,6 +18,8 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)]
     test_main();
 
+    println!("I'm still alive!");
+
     loop {}
 }
 
