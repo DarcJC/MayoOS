@@ -5,10 +5,29 @@
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
+#![feature(abi_x86_interrupt)]
+
 
 use core::panic::PanicInfo;
 
-// Unit tests
+
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    init();
+    test_main();
+    loop {}
+}
+
+#[cfg(test)]
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    test_panic_handler(_info);
+}
+
+pub fn init() {
+    interrupts::init_idt();
+}
 
 pub fn test_runner(tests: &[&dyn Fn()]) {
     serial_println!("Running {} tests", tests.len());
@@ -25,19 +44,6 @@ pub fn test_panic_handler(_info: &PanicInfo) -> ! {
     exit_qemu_by_port(QemuExitCode::Failed);
 
     loop {}
-}
-
-#[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    test_main();
-    loop {}
-}
-
-#[cfg(test)]
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    test_panic_handler(_info);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -57,3 +63,4 @@ pub fn exit_qemu_by_port(exit_code: QemuExitCode) {
 
 pub mod vga_buffer;
 pub mod serial_port;
+pub mod interrupts;
