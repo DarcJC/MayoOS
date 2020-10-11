@@ -23,6 +23,10 @@ test-args = [
 test-success-exit-code = 33  # (0x10 << 1) | 1
 test-timeout = 120  # seconds
 
+[[test]]
+name = "stack_overflow"
+harness = false
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
