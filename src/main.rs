@@ -20,7 +20,7 @@ pub extern "C" fn _start() -> ! {
 
     println!("I'm still alive!");
 
-    loop {}
+    mayoos::halt_loop()
 }
 
 #[cfg(not(test))]
@@ -28,7 +28,7 @@ pub extern "C" fn _start() -> ! {
 fn panic(_info: &PanicInfo) -> ! {
     println!("{}", _info);
 
-    loop {}
+    mayoos::halt_loop()
 }
 
 #[cfg(test)]

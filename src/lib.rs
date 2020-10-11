@@ -16,7 +16,8 @@ use core::panic::PanicInfo;
 pub extern "C" fn _start() -> ! {
     init();
     test_main();
-    loop {}
+
+    halt_loop();
 }
 
 #[cfg(test)]
@@ -28,7 +29,7 @@ fn panic(_info: &PanicInfo) -> ! {
 pub fn init() {
     gdt::init();
     interrupts::init_idt();
-    
+
     unsafe {
         interrupts::PICS.lock().initialize();
     }
@@ -49,7 +50,7 @@ pub fn test_panic_handler(_info: &PanicInfo) -> ! {
     serial_println!("Error: {}\n", _info);
     exit_qemu_by_port(QemuExitCode::Failed);
 
-    loop {}
+    halt_loop()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -64,6 +65,12 @@ pub fn exit_qemu_by_port(exit_code: QemuExitCode) {
 
     unsafe {
         PortWrite::write_to_port(0xf4, exit_code as u32);
+    }
+}
+
+pub fn halt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
     }
 }
 
