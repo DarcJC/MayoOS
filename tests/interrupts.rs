@@ -25,7 +25,7 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[test_case]
 fn test_breakpoint_exception() {
-    serial_print!("Testing breakpoint(INT3) exception... ");
+    serial_print!("Testing breakpoint(INT3) exception...\t");
     x86_64::instructions::interrupts::int3();
     serial_println!("[ok]");
 }

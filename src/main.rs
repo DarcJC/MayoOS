@@ -7,9 +7,14 @@
 
 use core::panic::PanicInfo;
 use mayoos::println;
+use bootloader::{
+    BootInfo,
+    entry_point,
+};
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(mayo_main);
+
+fn mayo_main(boot_info: &'static BootInfo) -> ! {
 
     println!("Welcome to Mayo OS!");
 
@@ -18,7 +23,7 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)]
     test_main();
 
-    println!("I'm still alive!");
+    println!("Mayo OS is now alive!");
 
     mayoos::halt_loop()
 }

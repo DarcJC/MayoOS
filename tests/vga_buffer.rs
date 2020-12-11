@@ -24,7 +24,7 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[test_case]
 fn test_println() {
-    serial_print!("Testing println... ");
+    serial_print!("Testing println...\t");
     for i in 0..200 {
         println!("Test test test {}", i);
     }
@@ -36,7 +36,7 @@ fn test_println_output() {
     use core::fmt::Write;
     use x86_64::instructions::interrupts;
 
-    serial_print!("Testing println outputs... ");
+    serial_print!("Testing println outputs...\t");
 
     let s = "Some test string that fits on a single line";
 

@@ -10,10 +10,18 @@
 
 use core::panic::PanicInfo;
 
+#[cfg(test)]
+use bootloader::{
+    entry_point,
+    BootInfo,
+};
 
 #[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(test_mayo_main);
+
+
+#[cfg(test)]
+fn test_mayo_main(_boot_info: &'static BootInfo) -> ! {
     init();
     test_main();
 
@@ -78,3 +86,4 @@ pub mod vga_buffer;
 pub mod serial_port;
 pub mod interrupts;
 pub mod gdt;
+pub mod memory;
