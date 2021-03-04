@@ -16,9 +16,21 @@ entry_point!(mayo_main);
 
 fn mayo_main(boot_info: &'static BootInfo) -> ! {
 
+    use mayoos::memory::active_level_4_table;
+    use x86_64::VirtAddr;
+
     println!("Welcome to Mayo OS!");
 
     mayoos::init();
+    
+    let physical_memory_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let l4_table = unsafe { active_level_4_table(physical_memory_offset) };
+
+    for (i, entry) in l4_table.iter().enumerate() {
+        if !entry.is_unused() {
+            println!("L4 Entry {}: {:?}", i, entry);
+        }
+    }
 
     #[cfg(test)]
     test_main();
