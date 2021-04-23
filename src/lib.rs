@@ -1,14 +1,15 @@
-
 #![no_std]
-
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
+#![feature(abi_x86_interrupt)]
+#![feature(alloc_error_handler)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
-#![feature(abi_x86_interrupt)]
 
+extern crate alloc;
 
 use core::panic::PanicInfo;
+use alloc::alloc::Layout;
 
 #[cfg(test)]
 use bootloader::{
@@ -24,7 +25,6 @@ entry_point!(test_mayo_main);
 fn test_mayo_main(_boot_info: &'static BootInfo) -> ! {
     init();
     test_main();
-
     halt_loop();
 }
 
@@ -32,6 +32,11 @@ fn test_mayo_main(_boot_info: &'static BootInfo) -> ! {
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     test_panic_handler(_info);
+}
+
+#[alloc_error_handler]
+fn alloc_error_handler(layout: Layout) -> ! {
+    panic!("allocation error: {:?}", layout)
 }
 
 pub fn init() {
@@ -44,12 +49,25 @@ pub fn init() {
     x86_64::instructions::interrupts::enable();
 }
 
-pub fn test_runner(tests: &[&dyn Fn()]) {
+pub trait Testable {
+    fn run(&self) -> ();
+}
+
+impl<T> Testable for T
+where
+    T: Fn(), {
+    fn run(&self) {
+        serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[ok]");
+    }
+}
+
+pub fn test_runner(tests: &[&dyn Testable]) {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
-        test();
+        test.run();
     }
-
     exit_qemu_by_port(QemuExitCode::Success);
 }
 
@@ -57,7 +75,6 @@ pub fn test_panic_handler(_info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", _info);
     exit_qemu_by_port(QemuExitCode::Failed);
-
     halt_loop()
 }
 

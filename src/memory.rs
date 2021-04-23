@@ -1,10 +1,8 @@
 
-use x86_64::{
-    structures::paging::PageTable,
-    VirtAddr,
-    PhysAddr,
-    structures::paging::OffsetPageTable,
-};
+pub mod allocator;
+
+use x86_64::{PhysAddr, VirtAddr, structures::paging::OffsetPageTable, structures::paging::{FrameAllocator, PageTable, PhysFrame, Size4KiB}};
+use bootloader::bootinfo::{MemoryMap, MemoryRegionType};
 
 pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static>  {
     let level_4_table = active_level_4_table(physical_memory_offset);
@@ -24,6 +22,7 @@ unsafe fn active_level_4_table(physical_memory_offset: VirtAddr)
     &mut *page_table_ptr
 }
 
+#[deprecated]
 pub unsafe fn translate_addr(addr: VirtAddr, physical_memory_offset: VirtAddr)
     -> Option<PhysAddr> {
     translate_addr_inner(addr, physical_memory_offset)
@@ -58,4 +57,40 @@ fn translate_addr_inner(addr: VirtAddr, physical_memory_offset: VirtAddr)
     }
 
     Some(frame.start_address() + u64::from(addr.page_offset()))
+}
+
+pub struct BootInfoFrameAllocator {
+    map: &'static MemoryMap,
+    next: usize,
+}
+
+impl BootInfoFrameAllocator {
+    pub unsafe fn new(memory_map: &'static MemoryMap) -> Self {
+        return BootInfoFrameAllocator {
+            map: memory_map,
+            next: 0,
+        }
+    }
+
+    fn usable_frame(&self) -> impl Iterator<Item = PhysFrame> {
+        let regions = self.map.iter();
+        let usable_regions = regions.filter(
+            |x| x.region_type == MemoryRegionType::Usable
+        );
+        let addr_ranges = usable_regions.map(
+            |x| x.range.start_addr()..x.range.end_addr()
+        );
+        let frame_addresses = addr_ranges.flat_map(|x| x.step_by(4096));
+        frame_addresses.map(
+            |addr| PhysFrame::containing_address(PhysAddr::new(addr)),
+        )
+    }
+}
+
+unsafe impl FrameAllocator<Size4KiB> for BootInfoFrameAllocator {
+    fn allocate_frame(&mut self) -> Option<PhysFrame> {
+        let frame = self.usable_frame().nth(self.next);
+        self.next += 1;
+        frame
+    }
 }

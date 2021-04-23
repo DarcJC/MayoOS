@@ -63,7 +63,7 @@ extern "x86-interrupt" fn breakpoint_handler(
 
 extern "x86-interrupt" fn page_fault_handler(
     stack_frame: &mut InterruptStackFrame,
-    err_code: PageFaultErrorCode
+    _err_code: PageFaultErrorCode
 ) {
     use crate::halt_loop;
     use x86_64::registers::control::Cr2;

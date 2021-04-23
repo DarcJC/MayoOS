@@ -4,12 +4,6 @@ version = "0.1.0"
 authors = ["DarcJC <me@darc.pro>"]
 edition = "2018"
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-
 [package.metadata.bootimage]
 # test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
 #  "-nographic", "-curses", 
@@ -27,20 +21,25 @@ test-timeout = 120  # seconds
 name = "stack_overflow"
 harness = false
 
+[[test]]
+name = "should_panic"
+harness = false
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-volatile = "0.2.3"
-spin = "0.4.9"
-x86_64 = "0.12.2"
-uart_16550 = "0.2.10"
+volatile = "0.2.6"
+spin = "0.5.2"
+x86_64 = "0.13.2"
+uart_16550 = "0.2.0"
 pic8259_simple = "0.2.0"
-pc-keyboard = "0.5.1"
+pc-keyboard = "0.5.0"
+linked_list_allocator = "0.8.0"
 
 [dependencies.lazy_static]
-version = "1.4.0"
+version = "1.0"
 features = ["spin_no_std"]
 
 [dependencies.bootloader]
-version = "0.9.0"
+version = "0.9.8"
 features = ["map_physical_memory"]
