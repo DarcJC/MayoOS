@@ -1,8 +1,8 @@
 # Mayo OS
-Blabla
+A tiny operating system for learning.
 
 # QEMU
-`cargo xtest` will run unit test, and its output will hup to `testout` file.
+`cargo test` will run unit tests.
 
 `cargo bootimage` will build a binary image that could run by qemu.
 

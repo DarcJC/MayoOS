@@ -1,12 +1,16 @@
 use x86_64::{VirtAddr, structures::paging::{FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB, mapper::MapToError}};
-use linked_list_allocator::LockedHeap;
+// use linked_list_allocator::LockedHeap;
+// use crate::memory::allocator::bump::BumpAllocator;
+use crate::memory::allocator::linked::LinkedListAllocator;
 
 
-pub const HEAP_START: usize = 0x_6666_6666_0000;
+pub const HEAP_START: usize = 0x_6000_0000_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 
 #[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
+// static ALLOCATOR: LockedHeap = LockedHeap::empty();
+// static ALLOCATOR: Locked<BumpAllocator> = Locked::new( BumpAllocator::new());
+static ALLOCATOR: Locked<LinkedListAllocator> = Locked::new(LinkedListAllocator::new());
 
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
@@ -50,3 +54,22 @@ pub fn align_down(addr: usize, align: usize) -> usize {
 pub fn align_up(addr: usize, align: usize) -> usize {
     align_down(addr + align - 1, align)
 }
+
+pub struct Locked<A> {
+    inner: spin::Mutex<A>,
+}
+
+impl<A> Locked<A> {
+    pub const fn new(inner: A) -> Self {
+        Locked {
+            inner: spin::Mutex::new(inner),
+        }
+    }
+
+    pub fn lock(&self) -> spin::MutexGuard<A> {
+        self.inner.lock()
+    }
+}
+
+pub mod bump;
+pub mod linked;
