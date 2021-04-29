@@ -1,7 +1,8 @@
 use x86_64::{VirtAddr, structures::paging::{FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB, mapper::MapToError}};
 // use linked_list_allocator::LockedHeap;
 // use crate::memory::allocator::bump::BumpAllocator;
-use crate::memory::allocator::linked::LinkedListAllocator;
+// use crate::memory::allocator::linked::LinkedListAllocator;
+use crate::memory::allocator::block::FixedBlockAllocator;
 
 
 pub const HEAP_START: usize = 0x_6000_0000_0000;
@@ -10,7 +11,13 @@ pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 #[global_allocator]
 // static ALLOCATOR: LockedHeap = LockedHeap::empty();
 // static ALLOCATOR: Locked<BumpAllocator> = Locked::new( BumpAllocator::new());
-static ALLOCATOR: Locked<LinkedListAllocator> = Locked::new(LinkedListAllocator::new());
+// static ALLOCATOR: Locked<LinkedListAllocator> = Locked::new(LinkedListAllocator::new());
+static ALLOCATOR: Locked<FixedBlockAllocator> = Locked::new(FixedBlockAllocator::new());
+
+pub trait MayoAllocator {
+    fn new_for_fallback() -> Self;
+    unsafe fn init(&mut self, heap_start: usize, heap_size: usize);
+}
 
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
@@ -73,3 +80,4 @@ impl<A> Locked<A> {
 
 pub mod bump;
 pub mod linked;
+pub mod block;

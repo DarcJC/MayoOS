@@ -1,4 +1,4 @@
-use crate::memory::allocator::{align_up, Locked};
+use crate::memory::allocator::{align_up, Locked, MayoAllocator};
 use core::mem::{align_of, size_of};
 use core::alloc::{GlobalAlloc, Layout};
 use core::ptr;
@@ -34,14 +34,6 @@ impl LinkedListAllocator {
         Self {
             head: ListNode::new(0),
         }
-    }
-
-    /// Init allocator with params
-    ///
-    /// # Note
-    /// This method should only be called once.
-    pub unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
-        self.add_free_region(heap_start, heap_size)
     }
 
     /// Adds the given memory region to the front of the list.
@@ -100,6 +92,20 @@ impl LinkedListAllocator {
             .pad_to_align();
         let size = layout.size().max(size_of::<ListNode>());
         (size, layout.align())
+    }
+}
+
+impl MayoAllocator for LinkedListAllocator {
+    fn new_for_fallback() -> Self {
+        Self::new()
+    }
+
+    /// Init allocator with params
+    ///
+    /// # Note
+    /// This method should only be called once.
+    unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
+        self.add_free_region(heap_start, heap_size)
     }
 }
 

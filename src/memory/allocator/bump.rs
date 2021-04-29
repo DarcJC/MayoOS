@@ -1,5 +1,6 @@
 use core::alloc::{GlobalAlloc, Layout};
 use core::ptr;
+use crate::memory::allocator::MayoAllocator;
 
 pub struct BumpAllocator {
     heap_start: usize,
@@ -17,8 +18,14 @@ impl BumpAllocator {
             allocations: 0,
         }
     }
+}
 
-    pub unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
+impl MayoAllocator for BumpAllocator {
+    fn new_for_fallback() -> Self {
+        Self::new()
+    }
+
+    unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
         self.heap_start = heap_start;
         self.heap_end = heap_start + heap_size;
         self.next = heap_start;
