@@ -10,6 +10,8 @@ use bootloader::{
     BootInfo,
     entry_point,
 };
+use mayoos::task::simple_executor::SimpleExecutor;
+use mayoos::task::Task;
 
 entry_point!(mayo_main);
 
@@ -36,6 +38,10 @@ fn mayo_main(boot_info: &'static BootInfo) -> ! {
 
     println!("Mayo OS is now alive!");
 
+    let mut executor = SimpleExecutor::new();
+    executor.spawn(Task::new(example_task()));
+    executor.run();
+
     mayoos::halt_loop()
 }
 
@@ -53,3 +59,11 @@ fn panic(_info: &PanicInfo) -> ! {
     mayoos::test_panic_handler(_info);
 }
 
+async fn async_number() -> u32 {
+    42
+}
+
+async fn example_task() {
+    let number = async_number().await;
+    println!("async number: {}", number);
+}
