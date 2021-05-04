@@ -17,8 +17,7 @@ test-args = [
 test-success-exit-code = 33  # (0x10 << 1) | 1
 test-timeout = 120  # seconds
 run-args = [
-    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio",
-    "-display", "none"
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
 ]
 
 [[test]]
@@ -47,3 +46,17 @@ features = ["spin_no_std"]
 [dependencies.bootloader]
 version = "0.9.8"
 features = ["map_physical_memory"]
+
+[dependencies.crossbeam-queue]
+version = "0.2.1"
+default-features = false
+features = ["alloc"]
+
+[dependencies.conquer-once]
+version = "0.2.0"
+default-features = false
+
+[dependencies.futures-util]
+version = "0.3.4"
+default-features = false
+features = ["alloc"]

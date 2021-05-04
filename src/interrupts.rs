@@ -8,7 +8,6 @@ use pic8259_simple::ChainedPics;
 use spin::Mutex;
 use crate::{
     println,
-    print,
 };
 use crate::gdt;
 use lazy_static::lazy_static;
@@ -108,7 +107,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
 
     use x86_64::instructions::port::PortRead;
     use pc_keyboard::{
-        layouts, DecodedKey, HandleControl,
+        layouts, HandleControl,
         Keyboard, ScancodeSet1,
     };
 
@@ -119,18 +118,20 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
         };
     }
 
-    let mut keyboard = KEYBOARD.lock();
+    // let mut keyboard = KEYBOARD.lock();
     let scancode: u8 = unsafe {
         PortRead::read_from_port(0x60)
     };
-    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-        if let Some(key) = keyboard.process_keyevent(key_event) {
-            match key {
-                DecodedKey::Unicode(character) => print!("{}", character),
-                DecodedKey::RawKey(key) => print!("{:?}", key),
-            }
-        }
-    }
+    crate::task::keyboard::add_scancode(scancode);
+
+    // if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+    //     if let Some(key) = keyboard.process_keyevent(key_event) {
+    //         match key {
+    //             DecodedKey::Unicode(character) => print!("{}", character),
+    //             DecodedKey::RawKey(key) => print!("{:?}", key),
+    //         }
+    //     }
+    // }
 
     unsafe {
         PICS.lock()
