@@ -81,6 +81,9 @@ pub fn read_config_data_word(offset: u8) -> u16 {
     }
 }
 
+/// Read vendor id and device id using given bus and slot
+///
+/// **Don't use this function in async control stream**
 fn get_device_vendor_and_id(bus: u8, device: u8) -> (Word, Word) {
     let addr = PCIConfigAddr::new(bus, device, 0, 0);
     addr.write_to_port();
@@ -114,6 +117,7 @@ fn check_device(bus: u8, device: u8) -> bool {
     get_device_vendor_and_id(bus, device).0 != 0xFFFF
 }
 
+/// Discover all devices on the bus
 pub fn scan_bus_devices(bus: u8) -> Vec<DeviceInfo> {
     let mut res: Vec<DeviceInfo> = Vec::with_capacity(32);
 

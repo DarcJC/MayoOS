@@ -40,8 +40,6 @@ fn mayo_main(boot_info: &'static BootInfo) -> ! {
 
     println!("Mayo OS is now alive!");
 
-    println!("{:?}", scan_bus_devices(0));
-
     let mut executor = Executor::new();
     executor.spawn(Task::new(print_keypress()));
     executor.run();
