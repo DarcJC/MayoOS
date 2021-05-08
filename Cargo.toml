@@ -33,7 +33,7 @@ harness = false
 [dependencies]
 volatile = "0.2.6"
 spin = "0.5.2"
-x86_64 = "0.13.2"
+x86_64 = "0.13.6"
 uart_16550 = "0.2.0"
 pic8259_simple = "0.2.0"
 pc-keyboard = "0.5.0"

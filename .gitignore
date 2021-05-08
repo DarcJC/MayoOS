@@ -3,3 +3,6 @@ testout
 build.sh
 .idea/
 test.log
+.vscode/
+!.vscode/settings.json
+programs/
