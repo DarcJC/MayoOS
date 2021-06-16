@@ -5,6 +5,9 @@
 #![feature(alloc_error_handler)]
 #![feature(const_mut_refs)]
 #![feature(trait_alias)]
+#![feature(asm)]
+#![feature(array_map)]
+#![feature(core_intrinsics)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
@@ -109,3 +112,4 @@ pub mod memory;
 pub mod task;
 pub mod sub_system;
 pub mod utils;
+pub mod driver;

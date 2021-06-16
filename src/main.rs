@@ -4,6 +4,8 @@
 #![test_runner(mayoos::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
+
 use core::panic::PanicInfo;
 use mayoos::println;
 use bootloader::{
@@ -13,7 +15,6 @@ use bootloader::{
 use mayoos::task::Task;
 use mayoos::task::keyboard::print_keypress;
 use mayoos::task::executor::Executor;
-use mayoos::utils::pci::scan_bus_devices;
 
 entry_point!(mayo_main);
 
@@ -39,6 +40,9 @@ fn mayo_main(boot_info: &'static BootInfo) -> ! {
     test_main();
 
     println!("Mayo OS is now alive!");
+
+    mayoos::driver::init(physical_memory_offset);
+    mayoos::driver::fw_cfg::get_files();
 
     let mut executor = Executor::new();
     executor.spawn(Task::new(print_keypress()));

@@ -4,7 +4,7 @@ use x86_64::structures::idt::{
     InterruptStackFrame,
     PageFaultErrorCode,
 };
-use pic8259_simple::ChainedPics;
+use pic8259::ChainedPics;
 use spin::Mutex;
 use crate::{
     println,
@@ -48,20 +48,20 @@ pub fn init_idt() {
 
 // Exception interrupts
 extern "x86-interrupt" fn double_fault_handler(
-    stack_frame: &mut InterruptStackFrame,
+    stack_frame: InterruptStackFrame,
     err_code: u64
 ) -> ! {
     panic!("EXCEPTION: DOUBLE FAULT\n{:#?}\nERROR CODE: {}\n", stack_frame, err_code);
 }
 
 extern "x86-interrupt" fn breakpoint_handler(
-    stack_frame: &mut InterruptStackFrame
+    stack_frame: InterruptStackFrame
 ) {
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn page_fault_handler(
-    stack_frame: &mut InterruptStackFrame,
+    stack_frame: InterruptStackFrame,
     _err_code: PageFaultErrorCode
 ) {
     use crate::halt_loop;
@@ -94,7 +94,7 @@ impl InterruptIndex {
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(
-    _stack_frame: &mut InterruptStackFrame
+    _stack_frame: InterruptStackFrame
 ) {
     unsafe {
         PICS.lock().notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
@@ -102,7 +102,7 @@ extern "x86-interrupt" fn timer_interrupt_handler(
 }
 
 extern "x86-interrupt" fn keyboard_interrupt_handler(
-    _stack_frame: &mut InterruptStackFrame
+    _stack_frame: InterruptStackFrame
 ) {
 
     use x86_64::instructions::port::PortRead;

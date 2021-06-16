@@ -1,4 +1,4 @@
-use x86_64::instructions::port::{PortWriteOnly, PortReadOnly};
+use x86_64::instructions::port::{PortWriteOnly, PortReadOnly, };
 use alloc::vec::Vec;
 
 /// PCI CONFIG_ADDRESS
@@ -19,11 +19,11 @@ impl PCIConfigAddr {
         func_number: u8,
         offset: u8,
     ) -> Self {
-        let bus_number = (bus_number as u32);
+        let bus_number = bus_number as u32;
         let device_number = (device_number as u32) & 0b0001_1111;
         let func_number = (func_number as u32) & 0b0000_0111;
         let offset = (offset as u32) & 0b1111_1100;
-        let mut tmp =
+        let tmp =
             0x8000_0000
                 | bus_number << 16
                 | device_number << 11
@@ -39,7 +39,7 @@ impl PCIConfigAddr {
         func_number: u8,
         offset: u8,
     ) -> Self {
-        let mut tmp =
+        let tmp =
             0x8000_0000
                 | (bus_number as u32) << 16
                 | (device_number as u32) << 11
@@ -49,12 +49,34 @@ impl PCIConfigAddr {
     }
 
     /// Writing the address to 0xCF8 port.
-    pub fn write_to_port(&self) {
+    pub fn write_to_addr_port(&self) {
         let data = self.0;
         let mut port: PortWriteOnly<u32> = PortWriteOnly::new(0xCF8);
         unsafe {
             port.write(data);
         }
+    }
+
+    pub fn write_word(&self, word: Word) {
+        let mut port: PortWriteOnly<u16> = PortWriteOnly::new(0xCFC);
+        unsafe { port.write(word); }
+    }
+
+    pub fn write_dword(&self, dword: DWord) {
+        let mut port: PortWriteOnly<u32> = PortWriteOnly::new(0xCFC);
+        unsafe {
+            port.write(dword);
+        }
+    }
+
+    pub fn read_word(&self, offset: u8) -> Word {
+        self.write_to_addr_port();
+        read_config_data_word(offset)
+    }
+
+    pub fn read_dword(&self) -> DWord {
+        self.write_to_addr_port();
+        read_config_data_dword()
     }
 }
 
@@ -74,10 +96,17 @@ pub fn read_current_config_addr() -> u32 {
 /// let addr = PCIConfigAddr::new(0, 0, 0, 0);
 /// let vendor = read_config_data_word(0);
 /// ```
-pub fn read_config_data_word(offset: u8) -> u16 {
+pub fn read_config_data_word(offset: u8) -> Word {
     let mut port: PortReadOnly<u32> = PortReadOnly::new(0xCFC);
     unsafe {
         (port.read() >> ((offset as u16 & 2) * 8)) as u16
+    }
+}
+
+pub fn read_config_data_dword() -> DWord {
+    let mut port: PortReadOnly<u32> = PortReadOnly::new(0xCFC);
+    unsafe {
+        port.read()
     }
 }
 
@@ -86,17 +115,17 @@ pub fn read_config_data_word(offset: u8) -> u16 {
 /// **Don't use this function in async control stream**
 fn get_device_vendor_and_id(bus: u8, device: u8) -> (Word, Word) {
     let addr = PCIConfigAddr::new(bus, device, 0, 0);
-    addr.write_to_port();
+    addr.write_to_addr_port();
     let res = read_config_data_word(0);
     (res, read_config_data_word(0b10))
 }
 
 #[derive(Debug, Clone)]
 pub struct DeviceInfo {
-    bus: u8,
-    slot: u8,
-    id: Word,
-    vendor: Word,
+    pub bus: u8,
+    pub slot: u8,
+    pub id: Word,
+    pub vendor: Word,
 }
 
 impl DeviceInfo {

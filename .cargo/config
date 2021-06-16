@@ -9,7 +9,7 @@ target = "x86_64-mayoos.json"
 runner = "bootimage runner"
 
 [source.crates-io]
-replace-with = 'tuna'
+registry = "https://github.com/rust-lang/crates.io-index"
 
 [source.tuna]
 registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
