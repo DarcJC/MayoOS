@@ -14,6 +14,7 @@ use bootloader::{
 };
 use mayoos::task::Task;
 use mayoos::task::keyboard::print_keypress;
+use mayoos::task::init::mayo_init;
 use mayoos::task::executor::Executor;
 
 entry_point!(mayo_main);
@@ -42,10 +43,10 @@ fn mayo_main(boot_info: &'static BootInfo) -> ! {
     println!("Mayo OS is now alive!");
 
     mayoos::driver::init(physical_memory_offset);
-    mayoos::driver::fw_cfg::get_files();
 
     let mut executor = Executor::new();
     executor.spawn(Task::new(print_keypress()));
+    executor.spawn(Task::new(mayo_init()));
     executor.run();
 
     mayoos::halt_loop()

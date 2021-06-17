@@ -7,6 +7,7 @@ use core::task::{Context, Poll};
 use futures_util::task::AtomicWaker;
 use pc_keyboard::{Keyboard, layouts, ScancodeSet1, HandleControl, DecodedKey};
 use crate::print;
+use pc_keyboard::KeyCode::Enter;
 
 static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();
 static WAKER: AtomicWaker = AtomicWaker::new();
@@ -69,8 +70,15 @@ pub async fn print_keypress() {
         if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
             if let Some(key) = keyboard.process_keyevent(key_event) {
                 match key {
-                    DecodedKey::Unicode(character) => print!("{}", character),
-                    DecodedKey::RawKey(key) => print!("{:?}", key),
+                    DecodedKey::Unicode(character) => {
+                        super::init::push_key(character);
+                    },
+                    DecodedKey::RawKey(key) => {
+                        // print!("{:?}", key)
+                        if key == Enter {
+                            super::init::push_key('\n');
+                        }
+                    },
                 }
             }
         }

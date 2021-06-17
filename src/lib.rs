@@ -8,6 +8,7 @@
 #![feature(asm)]
 #![feature(array_map)]
 #![feature(core_intrinsics)]
+#![feature(once_cell)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 

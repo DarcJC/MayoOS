@@ -83,7 +83,7 @@ pub struct FWCfgFile {
 
 impl FWCfgFile {
     #![allow(dead_code)]
-    fn get_name(&self) -> String {
+    pub fn get_name(&self) -> String {
         let char_array = self.name.map( |b| char::from(b));
         let char_array = char_array.iter().filter(|c| **c != '\0');
         String::from_iter(char_array)
@@ -129,7 +129,7 @@ unsafe fn dma_read_bytes(dest: u64, length: u32) {
 
 const _FD_SIZE: usize = size_of::<FWCfgFile>();
 
-pub fn get_files() {
+pub fn get_files() -> Vec<FWCfgFile> {
     let count: u32 = 0;
     let count_ptr: *const u32 = &count;
     unsafe {
@@ -137,12 +137,35 @@ pub fn get_files() {
         dma_read_bytes(count_ptr as u64, 4);
     }
     let count = count.swab();
-    println!("Reading {} FWCfgFiles", count);
+    let mut res: Vec<FWCfgFile> = Vec::new();
     for _ in 0..count {
         let file = FWCfgFile::default();
         unsafe {
             dma_read_bytes((&file as *const FWCfgFile) as u64, _FD_SIZE as u32);
         }
-        println!("{}", file.get_name());
+        res.push(file.clone())
+    }
+    res
+}
+
+pub fn read_file_by_name(name: &str) -> Option<Vec<u8>> {
+    let files = get_files();
+    let mut res: Vec<u8> = Vec::new();
+    let mut buf = 0u8;
+    let buf_ptr= &buf as *const u8;
+    if let Some(file) = files.iter().find(|f| {
+        f.get_name() == name
+    }) {
+        println!("Reading file of size {} ... Please wait~", file.size.swab());
+        unsafe {
+            set_selector_port(file.select.swab());
+            for _ in 0..file.size.swab() {
+                dma_read_bytes(buf_ptr as u64, 1);
+                res.push(buf);
+            }
+        }
+        Some(res)
+    } else {
+        None
     }
 }
